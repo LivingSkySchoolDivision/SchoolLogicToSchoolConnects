@@ -9,6 +9,9 @@ Bin/
 obj/
 Obj/
 
+# Config file
+SCRConfig.xml
+
 # Visual Studio temporary files
 *.user
 *.sln.docstates
