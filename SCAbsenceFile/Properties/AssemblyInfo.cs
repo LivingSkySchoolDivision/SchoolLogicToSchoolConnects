@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SchoolConnectsReports")]
+[assembly: AssemblyTitle("SCAbsenceFile")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SchoolConnectsReports")]
+[assembly: AssemblyProduct("SCAbsenceFile")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("edf2b3d6-0d61-48e7-936a-136e1a6e63e0")]
+[assembly: Guid("0ea74e61-bf96-4817-b1da-c2ca7a7855e6")]
 
 // Version information for an assembly consists of the following four values:
 //
