@@ -7,6 +7,7 @@ namespace SLDataLib
 {
     public class Student
     {
+        public string SchoolGovID { get; set; }
         public int DatabaseID { get; set; }
         public string GivenName { get; set; }
         public string Surname { get; set; }
@@ -25,8 +26,9 @@ namespace SLDataLib
             {
                 Connection = connection,
                 CommandType = CommandType.Text,
-                CommandText = "SQL QUERY GOES HERE"
+                CommandText = "SELECT dbo.Enrollment.dInDate, dbo.Enrollment.dOutDate, dbo.Enrollment.iStudentID, dbo.Student.cStudentNumber, dbo.Student.cFirstName, dbo.Student.cLastName, dbo.Grades.cName AS Grade, dbo.Homeroom.cName AS Homeroom, dbo.School.cCode AS SchoolGovID FROM dbo.School RIGHT OUTER JOIN dbo.Enrollment ON dbo.School.iSchoolID = dbo.Enrollment.iSchoolID LEFT OUTER JOIN dbo.Student LEFT OUTER JOIN dbo.Homeroom ON dbo.Student.iHomeroomID = dbo.Homeroom.iHomeroomID LEFT OUTER JOIN dbo.Grades ON dbo.Student.iGradesID = dbo.Grades.iGradesID ON dbo.Enrollment.iStudentID = dbo.Student.iStudentID WHERE SchoolGovID=@SCHOOLID"
             };
+            sqlCommand.Parameters.AddWithValue("SCHOOLID", SchoolGovID);
 
             sqlCommand.Connection.Open();
 
@@ -55,7 +57,7 @@ namespace SLDataLib
 
             foreach (Student student in schoolStudents)
             {
-                student.Contacts = Contact.LoadForStudent(connection, student.StudentNumber);
+                student.Contacts = Contact.LoadForStudent(connection, student.DatabaseID);
             }
 
             return schoolStudents;

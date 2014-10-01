@@ -1,4 +1,6 @@
-﻿namespace SLDataLib
+﻿using System;
+
+namespace SLDataLib
 {
     public static class Helpers
     {
@@ -18,7 +20,20 @@
 
             return 0;
         }
-
+        
+        public static bool ParseBool(string thisDatabaseValue)
+        {
+            if (String.IsNullOrEmpty(thisDatabaseValue))
+            {
+                return false;
+            }
+            else
+            {
+                bool parsedBool = false;
+                bool.TryParse(thisDatabaseValue, out parsedBool);
+                return parsedBool;
+            }
+        }
 
     }
 }
