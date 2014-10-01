@@ -62,10 +62,6 @@ namespace SCAddressBook
                     {
                         // Do things
                         DateTime parsedDate = Helpers.ParseDate(date);
-                        Logging.Info("SchoolID: " + parsedSchoolID);
-                        Logging.Info("File Name: " + fileName);
-                        Logging.Info("Date: " + parsedDate.ToLongDateString());
-                        Logging.Info("Connection String: " + Config.dbConnectionString_SchoolLogic);
 
                         try
                         {
