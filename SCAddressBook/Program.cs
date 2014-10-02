@@ -65,20 +65,29 @@ namespace SCAddressBook
 
                         try
                         {
+                            List<Student> schoolStudents = new List<Student>();
                             using (SqlConnection connection = new SqlConnection(Config.dbConnectionString_SchoolLogic))
                             {
-                                List<Student> schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
+                               schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
                                     parsedDate);
-                                Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
-                                Logging.Info("Creating CSV...");
-                                MemoryStream csvContents = AddressBookCSV.GenerateCSV(schoolStudents);
-                                Logging.Info("Saving CSV...");
-                                if (FileHelpers.FileExists(fileName))
+
+                                // Load student contacts
+                                foreach (Student student in schoolStudents)
                                 {
-                                    FileHelpers.DeleteFile(fileName);
+                                    student.Contacts = Contact.LoadForStudent(connection, student.DatabaseID);
                                 }
-                                FileHelpers.SaveFile(csvContents, fileName);
                             }
+
+                            Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
+                            Logging.Info("Creating CSV...");
+                            MemoryStream csvContents = AddressBookCSV.GenerateCSV(schoolStudents);
+                            Logging.Info("Saving CSV...");
+                            if (FileHelpers.FileExists(fileName))
+                            {
+                                FileHelpers.DeleteFile(fileName);
+                            }
+                            FileHelpers.SaveFile(csvContents, fileName);
+                            
                         }
                         catch (Exception ex)
                         {

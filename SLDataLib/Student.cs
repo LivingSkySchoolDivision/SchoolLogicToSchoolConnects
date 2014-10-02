@@ -56,14 +56,7 @@ namespace SLDataLib
             }
 
             sqlCommand.Connection.Close();
-
-            // Load student contacts
-
-            foreach (Student student in schoolStudents)
-            {
-                student.Contacts = Contact.LoadForStudent(connection, student.DatabaseID);
-            }
-
+            
             return schoolStudents;
 
         }
