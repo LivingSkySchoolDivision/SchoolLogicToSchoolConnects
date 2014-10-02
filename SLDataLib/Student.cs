@@ -49,7 +49,8 @@ namespace SLDataLib
                         DatabaseID = Helpers.ParseInt(dataReader["iStudentID"].ToString().Trim()),
                         Grade = dataReader["Grade"].ToString().Trim(),
                         HomeRoom = dataReader["HomeRoom"].ToString().Trim(),
-                        Contacts =  new List<Contact>()
+                        Contacts =  new List<Contact>(),
+                        SchoolGovID = dataReader["SchoolGovID"].ToString().Trim()
                     });
                 }
             }

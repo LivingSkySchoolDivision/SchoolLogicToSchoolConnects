@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="Contact.cs" />
+    <Compile Include="FileHelpers.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

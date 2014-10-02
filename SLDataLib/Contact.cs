@@ -26,7 +26,7 @@ namespace SLDataLib
             {
                 Connection = connection,
                 CommandType = CommandType.Text,
-                CommandText = "SELECT dbo.ContactRelation.iStudentID, dbo.LookupValues.cName AS Relation, dbo.ContactRelation.iContactPriority, dbo.Contact.cLastName, dbo.Contact.cFirstName, dbo.Contact.cBusPhone, dbo.Contact.mEmail, dbo.Contact.mCellphone, dbo.Location.cPhone FROM dbo.LookupValues RIGHT OUTER JOIN dbo.ContactRelation ON dbo.LookupValues.iLookupValuesID = dbo.ContactRelation.iLV_RelationID LEFT OUTER JOIN dbo.Contact ON dbo.ContactRelation.iContactID = dbo.Contact.iContactID LEFT OUTER JOIN dbo.Location ON dbo.Contact.iLocationID = dbo.Location.iLocationID WHERE iStudentID=@ISTUDENTID"
+                CommandText = "SELECT dbo.ContactRelation.iStudentID, dbo.LookupValues.cName AS Relation, dbo.ContactRelation.iContactPriority, dbo.Contact.cLastName, dbo.Contact.cFirstName, dbo.Contact.cBusPhone, dbo.Contact.mEmail, dbo.Contact.mCellphone, dbo.Location.cPhone FROM dbo.LookupValues RIGHT OUTER JOIN dbo.ContactRelation ON dbo.LookupValues.iLookupValuesID = dbo.ContactRelation.iLV_RelationID LEFT OUTER JOIN dbo.Contact ON dbo.ContactRelation.iContactID = dbo.Contact.iContactID LEFT OUTER JOIN dbo.Location ON dbo.Contact.iLocationID = dbo.Location.iLocationID WHERE iStudentID=@ISTUDENTID AND ContactRelation.lLivesWithStudent=1"
             };
             sqlCommand.Parameters.AddWithValue("ISTUDENTID", iStudentID);
 

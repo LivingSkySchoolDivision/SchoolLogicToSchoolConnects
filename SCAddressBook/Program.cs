@@ -70,16 +70,20 @@ namespace SCAddressBook
                                 List<Student> schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
                                     parsedDate);
                                 Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
+                                Logging.Info("Creating CSV...");
+                                MemoryStream csvContents = AddressBookCSV.GenerateCSV(schoolStudents);
+                                Logging.Info("Saving CSV...");
+                                if (FileHelpers.FileExists(fileName))
+                                {
+                                    FileHelpers.DeleteFile(fileName);
+                                }
+                                FileHelpers.SaveFile(csvContents, fileName);
                             }
                         }
                         catch (Exception ex)
                         {
                             Logging.Error(ex.Message);
                         }
-
-
-
-
                     }
                     else
                     {

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace SLDataLib
 {
@@ -72,6 +74,44 @@ namespace SLDataLib
 
             return returnMe;
         }
+        public static string FormatTelephoneNumber_JustNumbers(string value)
+        {
+            // Strip any non-numeric character out
+            List<char> allowedChars = new List<char>() { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
+            StringBuilder returnMe = new StringBuilder();
+
+            foreach (char c in value)
+            {
+                if (allowedChars.Contains(c))
+                {
+                    returnMe.Append(c);
+                }
+            }
+
+            if (returnMe.Length == 11)
+            {
+                if (returnMe[0] == '1')
+                {
+                    returnMe.Remove(0, 1);
+                }
+            }
+
+            return returnMe.Length == 10 ? returnMe.ToString() : string.Empty;
+        }
+
+        public static bool ValidTelephoneNumber(string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                if ((FormatTelephoneNumber_JustNumbers(value).Length == 10) ||
+                    (FormatTelephoneNumber_JustNumbers(value).Length == 11))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }
