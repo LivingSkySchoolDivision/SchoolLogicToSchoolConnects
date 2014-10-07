@@ -87,6 +87,7 @@ namespace SCAddressBook
                                 FileHelpers.DeleteFile(fileName);
                             }
                             FileHelpers.SaveFile(csvContents, fileName);
+                            Logging.Info("Done!");
                             
                         }
                         catch (Exception ex)
