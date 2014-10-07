@@ -30,7 +30,7 @@ namespace SLDataLib
                 Connection = connection,
                 CommandType = CommandType.Text,
                 CommandText = "SELECT Student.cStudentNumber, Student.cFirstName, Student.cLastName, Grades.cName AS Grade, Homeroom.cName AS Homeroom, School.cCode AS SchoolGovID, StudentStatus.iStudentID, StudentStatus.dInDate, StudentStatus.dOutDate, Student.iTrackID, Student.iSchoolID, Location.cPhone AS StudentPhoneNumber FROM StudentStatus LEFT OUTER JOIN Homeroom RIGHT OUTER JOIN Grades RIGHT OUTER JOIN Student LEFT OUTER JOIN Location ON Student.iLocationID = Location.iLocationID ON Grades.iGradesID = Student.iGradesID ON Homeroom.iHomeroomID = Student.iHomeroomID ON StudentStatus.iStudentID = Student.iStudentID LEFT OUTER JOIN School ON StudentStatus.iSchoolID = School.iSchoolID" +
-                              " WHERE (dbo.School.cCode = @SCHOOLID) AND (dbo.StudentStatus.dInDate < @ENDDATE) AND (dbo.StudentStatus.dOutDate = @NULLDATE OR dbo.StudentStatus.dOutDate >= @STARTDATE) AND (dbo.Student.iTrackID <> 0) ORDER BY dbo.Student.cLastName, dbo.Student.cFirstName"
+                              " WHERE (dbo.School.cCode = @SCHOOLID) AND (dbo.StudentStatus.dInDate <= @ENDDATE) AND (dbo.StudentStatus.dOutDate = @NULLDATE OR dbo.StudentStatus.dOutDate >= @STARTDATE) AND (dbo.Student.iTrackID <> 0) ORDER BY dbo.Student.cLastName, dbo.Student.cFirstName"
             };
             sqlCommand.Parameters.AddWithValue("SCHOOLID", SchoolGovID);
             sqlCommand.Parameters.AddWithValue("NULLDATE", Helpers.DatabaseNullDate);
