@@ -60,28 +60,34 @@ namespace SCAddressBook
                 {
                     if (Config.ConfigFileExists())
                     {
-                        // Do things
                         DateTime parsedDate = Helpers.ParseDate(date);
 
                         try
                         {
+                            Logging.ToLog("----------------------------------------------------------------");
+                            Logging.Info("Creating address book file for school " + parsedSchoolID + " for date " + parsedDate.ToLongDateString());
+
                             List<Student> schoolStudents = new List<Student>();
                             using (SqlConnection connection = new SqlConnection(Config.dbConnectionString_SchoolLogic))
                             {
-                               schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
+                                Logging.Info("Loading students");
+                                schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
                                     parsedDate);
 
+                                Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
+
                                 // Load student contacts
+                                Logging.Info("Loading student contacts");
                                 foreach (Student student in schoolStudents)
                                 {
                                     student.Contacts = Contact.LoadForStudent(connection, student.DatabaseID);
                                 }
                             }
 
-                            Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
-                            Logging.Info("Creating CSV...");
+                            
+                            Logging.Info("Creating CSV data");
                             MemoryStream csvContents = AddressBookCSV.GenerateCSV(schoolStudents);
-                            Logging.Info("Saving CSV...");
+                            Logging.Info("Saving CSV file (" + fileName + ")");
                             if (FileHelpers.FileExists(fileName))
                             {
                                 FileHelpers.DeleteFile(fileName);

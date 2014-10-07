@@ -60,31 +60,34 @@ namespace SCAbsenceFile
                 {
                     if (Config.ConfigFileExists())
                     {
-                        // Do things
                         DateTime parsedDate = Helpers.ParseDate(date);
 
                         try
                         {
+                            Logging.ToLog("----------------------------------------------------------------");
+                            Logging.Info("Creating absence file for school " + parsedSchoolID + " for date " + parsedDate.ToLongDateString());
+
                             Dictionary<Student, List<Absence>> studentsWithAbsences = new Dictionary<Student, List<Absence>>();
                             using (SqlConnection connection = new SqlConnection(Config.dbConnectionString_SchoolLogic))
                             {
-                                Logging.Info("Loading students...");
+                                Logging.Info("Loading students");
                                 List<Student> schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
                                      parsedDate);
 
+                                Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
+
                                 // Load student absences
-                                Logging.Info("Loading absences...");
+                                Logging.Info("Loading absences");
                                 foreach (Student student in schoolStudents)
                                 {
                                     studentsWithAbsences.Add(student, Absence.LoadAbsencesFor(connection, student, parsedDate, parsedDate.AddHours(23.5)));
                                 }
                             }
 
-                            Logging.Info("Loaded " + studentsWithAbsences.Count + " students for school " + parsedSchoolID);
-                            Logging.Info("Creating CSV...");
+                            Logging.Info("Creating CSV data");
 
                             MemoryStream csvContents = AbsenceCSV.GenerateCSV(studentsWithAbsences);
-                            Logging.Info("Saving CSV...");
+                            Logging.Info("Saving CSV file (" + fileName + ")");
                             if (FileHelpers.FileExists(fileName))
                             {
                                 FileHelpers.DeleteFile(fileName);
