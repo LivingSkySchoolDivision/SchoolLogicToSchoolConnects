@@ -34,7 +34,7 @@ namespace SCAbsenceFile
                                "\"Home Phone\"," +
                                "\"Grade\"," +
                                "\"AbsenceDate\"," +
-                               "\"PeriodsMissed\",");
+                               "\"PeriodsMissed\"");
             writer.WriteLine(headingLine.ToString());
 
             // Data
@@ -74,7 +74,7 @@ namespace SCAbsenceFile
                         studentLine.Append("\"" + Helpers.FormatTelephoneNumber_JustNumbers(student.TelephoneNumber) + "\"" + ",");
                         studentLine.Append("\"" + student.Grade + "\"" + ",");
                         studentLine.Append("\"" + dateString +"\"" + ",");
-                        studentLine.Append("\"" + missedPeriodsString.ToString() +"\"" + ",");
+                        studentLine.Append("\"" + missedPeriodsString.ToString() +"\"");
                         writer.WriteLine(studentLine.ToString());
                     }
                 }
