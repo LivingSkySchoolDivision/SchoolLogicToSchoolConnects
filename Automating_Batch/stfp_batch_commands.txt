@@ -1,0 +1,3 @@
+put Absence.csv
+put Addressbook.csv
+quit
