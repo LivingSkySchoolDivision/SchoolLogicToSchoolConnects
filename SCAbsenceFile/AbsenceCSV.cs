@@ -31,7 +31,7 @@ namespace SCAbsenceFile
             headingLine.Append("\"StudentID\"," +
                                "\"StudentLastName\"," +
                                "\"StudentFirstName\"," +
-                               "\"Home Phone\"," +
+                               "\"HomePhone\"," +
                                "\"Grade\"," +
                                "\"AbsenceDate\"," +
                                "\"PeriodsMissed\"");
