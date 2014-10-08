@@ -51,7 +51,7 @@ namespace SLDataLib
                         Surname = dataReader["cLastName"].ToString().Trim(),
                         StudentNumber = dataReader["cStudentNumber"].ToString().Trim(),
                         DatabaseID = Helpers.ParseInt(dataReader["iStudentID"].ToString().Trim()),
-                        Grade = dataReader["Grade"].ToString().Trim(),
+                        Grade = Helpers.FormatGrade(dataReader["Grade"].ToString().Trim()),
                         HomeRoom = dataReader["HomeRoom"].ToString().Trim(),
                         Contacts =  new List<Contact>(),
                         SchoolGovID = dataReader["SchoolGovID"].ToString().Trim(),

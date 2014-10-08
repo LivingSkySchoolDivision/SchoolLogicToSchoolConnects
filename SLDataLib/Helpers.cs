@@ -113,5 +113,25 @@ namespace SLDataLib
 
             return false;
         }
+
+        public static string FormatGrade(string value)
+        {
+            if (value.ToLower() == "0k")
+            {
+                return "K";
+            }
+
+            if (value.ToLower() == "k")
+            {
+                return "K";
+            }
+
+            if (value.ToLower() == "pk")
+            {
+                return "PK";
+            }
+
+            return ParseInt(value).ToString();
+        }
     }
 }
