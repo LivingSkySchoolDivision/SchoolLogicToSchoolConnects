@@ -21,6 +21,8 @@ namespace SCAddressBook
                                "\"StudentID\"," +
                                "\"StudentLastName\"," +
                                "\"StudentFirstName\"," +
+                               "\"Grade\"," +
+                               "\"HomeRoom\"," +
                                "\"ContactLastName\"," +
                                "\"ContactFirstName\"," +
                                "\"ContactRelation\"," +
@@ -44,6 +46,8 @@ namespace SCAddressBook
                         studentLine.Append("\"" + student.StudentNumber + "\"" + ",");
                         studentLine.Append("\"" + student.Surname + "\"" + ",");
                         studentLine.Append("\"" + student.GivenName + "\"" + ",");
+                        studentLine.Append("\"" + student.Grade + "\"" + ",");
+                        studentLine.Append("\"" + student.HomeRoom + "\"" + ",");
                         studentLine.Append("\"" + contact.Surname + "\"" + ",");
                         studentLine.Append("\"" + contact.GivenName + "\"" + ",");
                         studentLine.Append("\"" + contact.Relation + "\"" + ",");
