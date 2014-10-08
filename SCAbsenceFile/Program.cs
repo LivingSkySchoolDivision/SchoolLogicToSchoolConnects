@@ -43,7 +43,7 @@ namespace SCAbsenceFile
                         }
                         if (date.ToLower().Equals("yesterday"))
                         {
-                            date = DateTime.Today.AddDays(-1).ToString();
+                            date = Helpers.GetPreviousBusinessDay(DateTime.Today).ToString();
                         }
                         if (date.ToLower().Equals("now"))
                         {

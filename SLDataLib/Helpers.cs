@@ -133,5 +133,22 @@ namespace SLDataLib
 
             return ParseInt(value).ToString();
         }
+        
+        public static DateTime GetPreviousBusinessDay(DateTime thisDate)
+        {
+            DateTime previousDay = thisDate.AddDays(-1);
+
+            if (previousDay.DayOfWeek == DayOfWeek.Saturday)
+            {
+                previousDay = thisDate.AddDays(-2);
+            }
+
+            if (previousDay.DayOfWeek == DayOfWeek.Sunday)
+            {
+                previousDay = thisDate.AddDays(-3);
+            }
+
+            return previousDay;
+        }
     }
 }
