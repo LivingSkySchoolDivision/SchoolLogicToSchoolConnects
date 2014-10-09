@@ -41,7 +41,7 @@ namespace SCAbsenceFile
             StringBuilder studentLine = new StringBuilder();
             foreach (Student student in studentsWithAbsences.Keys)
             {
-                List<Absence> unexcusedAbsences = studentsWithAbsences[student].Where(abs => abs.IsExcused == false).ToList();
+                List<Absence> unexcusedAbsences = studentsWithAbsences[student].Where(abs => abs.IsLate == false).Where(abs => abs.IsExcused == false).ToList();
                 
                 if (unexcusedAbsences.Count > 0)
                 {
