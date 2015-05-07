@@ -23,6 +23,7 @@ namespace SCAddressBook
                 string parsedSchoolID = string.Empty;
                 string fileName = string.Empty;
                 string date = string.Empty;
+                List<string> grades = new List<string>() { "pk", "k", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 
                 foreach (string argument in args)
                 {
@@ -50,6 +51,21 @@ namespace SCAddressBook
                             date = DateTime.Now.ToString();
                         }
                     }
+                    else if (argument.ToLower().StartsWith("/grades:"))
+                    {
+                        string gradesRaw = argument.Substring(8, argument.Length - 8).Trim('\"').Trim();
+                        grades = new List<string>();
+                        Logging.ToLog("Limiting student selection to specific grades");
+                        foreach (string ss in gradesRaw.Split(','))
+                        {
+                            if (string.IsNullOrEmpty(ss))
+                            {
+                                grades.Add(ss);
+
+                                Logging.ToLog(" Adding grade \"" + ss + "\"");
+                            }
+                        }
+                    }
                 }
 
                 if ((String.IsNullOrEmpty(parsedSchoolID)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
@@ -72,7 +88,7 @@ namespace SCAddressBook
                             {
                                 Logging.Info("Loading students");
                                 schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
-                                    parsedDate);
+                                    parsedDate).Where(s => grades.Contains(s.Grade)).ToList();
 
                                 Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
 

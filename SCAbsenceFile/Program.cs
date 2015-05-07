@@ -18,11 +18,13 @@ namespace SCAbsenceFile
 
         static void Main(string[] args)
         {
+            
             if (args.Any())
             {
                 string parsedSchoolID = string.Empty;
                 string fileName = string.Empty;
                 string date = string.Empty;
+                List<string> grades = new List<string>() { "pk", "k", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 
                 foreach (string argument in args)
                 {
@@ -50,6 +52,20 @@ namespace SCAbsenceFile
                             date = DateTime.Now.ToString();
                         }
                     }
+                    else if (argument.ToLower().StartsWith("/grades:"))
+                    {
+                        string gradesRaw = argument.Substring(8, argument.Length - 8).Trim('\"').Trim();
+                        grades = new List<string>();
+                        Logging.Info("Limiting student selection to specific grades");
+                        foreach (string ss in gradesRaw.Split(','))
+                        {
+                            if (!string.IsNullOrEmpty(ss))
+                            {
+                                grades.Add(ss.ToLower());
+                                Logging.Info(" Adding grade \"" + ss + "\"");
+                            }
+                        }
+                    }
                 }
 
                 if ((String.IsNullOrEmpty(parsedSchoolID)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
@@ -72,7 +88,7 @@ namespace SCAbsenceFile
                             {
                                 Logging.Info("Loading students");
                                 List<Student> schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
-                                     parsedDate);
+                                     parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
 
                                 Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
 
