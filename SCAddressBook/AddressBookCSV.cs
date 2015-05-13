@@ -54,7 +54,7 @@ namespace SCAddressBook
                         studentLine.Append("\"" + contact.Priority + "\"" + ",");
                         studentLine.Append("\"" + Helpers.FormatTelephoneNumber_JustNumbers(contact.Telephone_Home) + "\"" + ",");
                         studentLine.Append("\"" + Helpers.FormatTelephoneNumber_JustNumbers(contact.Telephone_Cell) + "\"" + ",");
-                        studentLine.Append("\"" + Helpers.FormatTelephoneNumber_JustNumbers(contact.Telephone_Work) + "\"" + ",");
+                        studentLine.Append("\"" + string.Empty + "\"" + ",");
                         studentLine.Append("\"" + contact.Email + "\"" + "");
                         writer.WriteLine(studentLine.ToString());
                     }
