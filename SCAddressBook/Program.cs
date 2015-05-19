@@ -60,7 +60,7 @@ namespace SCAddressBook
                         {
                             if (string.IsNullOrEmpty(ss))
                             {
-                                grades.Add(ss);
+                                grades.Add(ss.ToLower());
 
                                 Logging.ToLog(" Adding grade \"" + ss + "\"");
                             }
@@ -88,7 +88,7 @@ namespace SCAddressBook
                             {
                                 Logging.Info("Loading students");
                                 schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
-                                    parsedDate).Where(s => grades.Contains(s.Grade)).ToList();
+                                    parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
 
                                 Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
 
