@@ -31,7 +31,7 @@ namespace SLDataLib
 
         private static Dictionary<int, List<Absence>> _cache;
 
-        private static Dictionary<int, List<Absence>> GetCache(SqlConnection connection, DateTime startDate, DateTime endDate, int schoolDatabaseID)
+        private static Dictionary<int, List<Absence>> GetCache(SqlConnection connection, DateTime startDate, DateTime endDate)
         {
             if (_cache == null)
             {
@@ -43,9 +43,10 @@ namespace SLDataLib
                     CommandType = CommandType.Text,
                     CommandText =
                         "SELECT Attendance.iStudentID, Attendance.dDate, Attendance.iBlockNumber, Attendance.iMinutes, Attendance.iSchoolID, AttendanceReasons.lExcusable FROM Attendance LEFT OUTER JOIN AttendanceReasons ON Attendance.iAttendanceReasonsID = AttendanceReasons.iAttendanceReasonsID" +
-                        " WHERE (Attendance.iSchoolID = @SCHOOLID) AND (Attendance.dDate <= @ENDDATE) AND (Attendance.dDate >= @STARTDATE) ORDER BY Attendance.iStudentID ASC, Attendance.iBlockNumber ASC"
+                        " WHERE (Attendance.dDate <= @ENDDATE) AND (Attendance.dDate >= @STARTDATE) ORDER BY Attendance.iStudentID ASC, Attendance.iBlockNumber ASC"
                 };
-                sqlCommand.Parameters.AddWithValue("SCHOOLID", schoolDatabaseID);
+                // (Attendance.iSchoolID = @SCHOOLID) AND
+                //sqlCommand.Parameters.AddWithValue("SCHOOLID", schoolDatabaseID);
                 sqlCommand.Parameters.AddWithValue("STARTDATE", startDate);
                 sqlCommand.Parameters.AddWithValue("ENDDATE", endDate);
 
@@ -87,9 +88,9 @@ namespace SLDataLib
         public static List<Absence> LoadAbsencesFor(SqlConnection connection, Student student, DateTime startDate,
             DateTime endDate)
         {
-            if (GetCache(connection, startDate, endDate, student.SchoolDatabaseID).ContainsKey(student.DatabaseID))
+            if (GetCache(connection, startDate, endDate).ContainsKey(student.DatabaseID))
             {
-                return GetCache(connection, startDate, endDate, student.SchoolDatabaseID)[student.DatabaseID];
+                return GetCache(connection, startDate, endDate)[student.DatabaseID];
             }
             else
             {

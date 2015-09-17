@@ -20,16 +20,28 @@ namespace SCAddressBook
         {
             if (args.Any())
             {
-                string parsedSchoolID = string.Empty;
                 string fileName = string.Empty;
                 string date = string.Empty;
                 List<string> grades = new List<string>() { "pk", "k", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+                bool allSchools = false;
+
+                List<string> selectedSchools = new List<string>();
 
                 foreach (string argument in args)
                 {
                     if (argument.ToLower().StartsWith("/schoolid:"))
                     {
-                        parsedSchoolID = argument.Substring(10,argument.Length - 10);
+                        foreach (string enteredID in argument.Substring(10, argument.Length - 10).Split(new char[] { ';', ',' }))
+                        {
+                            if (!string.IsNullOrEmpty(enteredID))
+                            {
+                                selectedSchools.Add(enteredID);
+                            }
+                        }
+                    }
+                    else if (argument.ToLower().StartsWith("/allschools"))
+                    {
+                        allSchools = true;
                     }
                     else if (argument.ToLower().StartsWith("/filename:"))
                     {
@@ -68,7 +80,7 @@ namespace SCAddressBook
                     }
                 }
 
-                if ((String.IsNullOrEmpty(parsedSchoolID)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
+                if (((selectedSchools.Count <= 0) && (!allSchools)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
                 {
                     SendSyntax();
                 } 
@@ -81,28 +93,39 @@ namespace SCAddressBook
                         try
                         {
                             Logging.ToLog("----------------------------------------------------------------");
-                            Logging.Info("Creating address book file for school " + parsedSchoolID + " for date " + parsedDate.ToLongDateString());
+                            Logging.Info("Creating address book file for date " + parsedDate.ToLongDateString());
+                            Logging.Info(" File creation started: " + DateTime.Now);
 
-                            List<Student> schoolStudents = new List<Student>();
+                            List<Student> reportStudents = new List<Student>();
                             using (SqlConnection connection = new SqlConnection(Config.dbConnectionString_SchoolLogic))
                             {
-                                Logging.Info("Loading students");
-                                schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
-                                    parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
-
-                                Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
-
-                                // Load student contacts
-                                Logging.Info("Loading student contacts");
-                                foreach (Student student in schoolStudents)
+                                if (allSchools)
                                 {
-                                    student.Contacts = Contact.LoadForStudent(connection, student.DatabaseID);
+                                    selectedSchools.AddRange(School.LoadSchoolIDNumbers(connection));
+                                }
+
+                                Logging.Info("Loading students");
+                                foreach (string schoolID in selectedSchools)
+                                {
+                                    List<Student> schoolStudents = Student.LoadForSchool(connection, schoolID,
+                                        parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
+
+                                    Logging.Info("Loaded " + schoolStudents.Count + " students for school " +
+                                                 schoolID);
+
+                                    // Load student contacts
+                                    Logging.Info("Loading student contacts");
+                                    foreach (Student student in schoolStudents)
+                                    {
+                                        student.Contacts = Contact.LoadForStudent(connection, student.DatabaseID);
+                                    }
+                                    reportStudents.AddRange(schoolStudents);
                                 }
                             }
 
                             
                             Logging.Info("Creating CSV data");
-                            MemoryStream csvContents = AddressBookCSV.GenerateCSV(schoolStudents);
+                            MemoryStream csvContents = AddressBookCSV.GenerateCSV(reportStudents);
                             Logging.Info("Saving CSV file (" + fileName + ")");
                             if (FileHelpers.FileExists(fileName))
                             {

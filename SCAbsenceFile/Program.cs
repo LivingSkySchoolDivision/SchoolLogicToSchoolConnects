@@ -21,20 +21,32 @@ namespace SCAbsenceFile
             
             if (args.Any())
             {
-                string parsedSchoolID = string.Empty;
                 string fileName = string.Empty;
                 string date = string.Empty;
                 List<string> grades = new List<string>() { "pk", "k", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+                bool allSchools = false;
+
+                List<string> selectedSchools = new List<string>();
 
                 foreach (string argument in args)
                 {
                     if (argument.ToLower().StartsWith("/schoolid:"))
                     {
-                        parsedSchoolID = argument.Substring(10, argument.Length - 10);
+                        foreach (string enteredID in argument.Substring(10, argument.Length - 10).Split(new char[] {';', ','}))
+                        {
+                            if (!string.IsNullOrEmpty(enteredID))
+                            {
+                                selectedSchools.Add(enteredID);
+                            }
+                        }
                     }
                     else if (argument.ToLower().StartsWith("/filename:"))
                     {
                         fileName = argument.Substring(10, argument.Length - 10);
+                    }
+                    else if (argument.ToLower().StartsWith("/allschools"))
+                    {
+                        allSchools = true;
                     }
                     else if (argument.ToLower().StartsWith("/date:"))
                     {
@@ -68,7 +80,7 @@ namespace SCAbsenceFile
                     }
                 }
 
-                if ((String.IsNullOrEmpty(parsedSchoolID)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
+                if (((selectedSchools.Count <= 0) && (!allSchools)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
                 {
                     SendSyntax();
                 }
@@ -81,22 +93,39 @@ namespace SCAbsenceFile
                         try
                         {
                             Logging.ToLog("----------------------------------------------------------------");
-                            Logging.Info("Creating absence file for school " + parsedSchoolID + " for date " + parsedDate.ToLongDateString());
+                            Logging.Info(" Creating absence file for date " + parsedDate.ToLongDateString());
+                            Logging.Info(" File creation started: " + DateTime.Now);
 
                             Dictionary<Student, List<Absence>> studentsWithAbsences = new Dictionary<Student, List<Absence>>();
-                            using (SqlConnection connection = new SqlConnection(Config.dbConnectionString_SchoolLogic))
+                            using (
+                                SqlConnection connection = new SqlConnection(Config.dbConnectionString_SchoolLogic))
                             {
-                                Logging.Info("Loading students");
-                                List<Student> schoolStudents = Student.LoadForSchool(connection, parsedSchoolID,
-                                     parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
-
-                                Logging.Info("Loaded " + schoolStudents.Count + " students for school " + parsedSchoolID);
-
-                                // Load student absences
-                                Logging.Info("Loading absences");
-                                foreach (Student student in schoolStudents)
+                                if (allSchools)
                                 {
-                                    studentsWithAbsences.Add(student, Absence.LoadAbsencesFor(connection, student, parsedDate, parsedDate.AddHours(23.5)));
+                                    selectedSchools.AddRange(School.LoadSchoolIDNumbers(connection));
+                                }
+
+                                Logging.Info("Loading students");
+                                foreach (string schoolID in selectedSchools)
+                                {
+                                    List<Student> schoolStudents = Student.LoadForSchool(connection, schoolID, parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
+
+                                    Logging.Info("Loaded " + schoolStudents.Count + " students for school " + schoolID);
+
+                                    int schoolAbsenceCount = 0;
+
+                                    // Load student absences
+                                    foreach (Student student in schoolStudents)
+                                    {
+                                        List<Absence> studentAbsences = Absence.LoadAbsencesFor(connection, student,
+                                            parsedDate, parsedDate.AddHours(23.5));
+                                        if (studentAbsences.Count > 0)
+                                        {
+                                            studentsWithAbsences.Add(student, studentAbsences);
+                                        }
+                                        schoolAbsenceCount += studentAbsences.Count;
+                                    }
+                                    Logging.Info(" Loaded " + schoolAbsenceCount + " absences for school " + schoolID);
                                 }
                             }
 
@@ -110,6 +139,7 @@ namespace SCAbsenceFile
                             }
                             FileHelpers.SaveFile(csvContents, fileName);
                             Logging.Info("Done!");
+                            
 
                         }
                         catch (Exception ex)
