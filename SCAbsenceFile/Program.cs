@@ -13,7 +13,44 @@ namespace SCAbsenceFile
     {
         static void SendSyntax()
         {
-            Console.WriteLine("Syntax goes here");
+            Console.WriteLine("SYNTAX:");
+            Console.WriteLine("");
+            Console.WriteLine(" REQUIRED:");
+            Console.WriteLine("");
+            Console.WriteLine(" /schoolid:000000");
+            Console.WriteLine(" Specify the government ID of the school, as found in the \"code\" field in");
+            Console.WriteLine(" SchoolLogic.");
+            Console.WriteLine(" Required, if not using //allschools.");
+            Console.WriteLine("");
+            Console.WriteLine(" /allschools");
+            Console.WriteLine(" Select all schools (ignoring //schoolid)");
+            Console.WriteLine("");
+            Console.WriteLine(" /filename:filename.csv");
+            Console.WriteLine(" Specify the filename");
+            Console.WriteLine("");
+            Console.WriteLine(""); 
+            Console.WriteLine(" /day:[today|yesterday|now]");
+            Console.WriteLine(" Which day would you like absences from.");
+            Console.WriteLine("");
+            Console.WriteLine(" OPTIONAL:");
+            Console.WriteLine("");
+            Console.WriteLine(" /JustPeriodAttendance");
+            Console.WriteLine(" Only include students who are in tracks using period attendance.");
+            Console.WriteLine("");
+            Console.WriteLine(" /JustDailyAttendance");
+            Console.WriteLine(" Only include students who are in tracks using daily (AM/PM) attendance.");
+            Console.WriteLine("");
+            Console.WriteLine(" /grades:pk,k,1,2,3,4,5,6,7,8,9,10,11,12");
+            Console.WriteLine("");
+            Console.WriteLine("EXAMPLES:");
+            Console.WriteLine("scabsencefile.exe /allschools /filename:LSKYSDAbsencePeriod.csv /date:today /JustPeriodAttendance");
+            Console.WriteLine("");
+            Console.WriteLine("scabsencefile.exe /allschools /filename:LSKYSDAbsenceDaily.csv /date:today /JustDailyAttendance");
+            Console.WriteLine("");
+            Console.WriteLine("scabsencefile.exe /schoolid:4410413 /filename:MacklinAbsenceHS.csv /date:today /grades:7,8,9,10,11,12");
+            Console.WriteLine("");
+            Console.WriteLine("scabsencefile.exe /schoolid:4410413 /filename:MacklinAbsenceElem.csv /date:today /grades:pk,k,1,2,3,4,5,6");
+            Console.WriteLine("");
         }
 
         static void Main(string[] args)
@@ -25,6 +62,8 @@ namespace SCAbsenceFile
                 string date = string.Empty;
                 List<string> grades = new List<string>() { "pk", "k", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
                 bool allSchools = false;
+                bool onlyPeriodAttendance = false;
+                bool onlyDailyAttendance = false;
 
                 List<string> selectedSchools = new List<string>();
 
@@ -47,6 +86,14 @@ namespace SCAbsenceFile
                     else if (argument.ToLower().StartsWith("/allschools"))
                     {
                         allSchools = true;
+                    }
+                    else if (argument.ToLower().StartsWith("/justperiodattendance"))
+                    {
+                        onlyPeriodAttendance = true;
+                    }
+                    else if (argument.ToLower().StartsWith("/justdailyattendance"))
+                    {
+                        onlyDailyAttendance = true;
                     }
                     else if (argument.ToLower().StartsWith("/date:"))
                     {
@@ -109,6 +156,18 @@ namespace SCAbsenceFile
                                 foreach (string schoolID in selectedSchools)
                                 {
                                     List<Student> schoolStudents = Student.LoadForSchool(connection, schoolID, parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
+
+                                    if (onlyDailyAttendance && !onlyPeriodAttendance)
+                                    {
+                                        Logging.Info("Only using daily attendance students");
+                                        schoolStudents = schoolStudents.Where(s => s.IsTrackDaily == true).ToList();
+                                    }
+
+                                    if (onlyPeriodAttendance && !onlyDailyAttendance)
+                                    {
+                                        Logging.Info("Only using period attendance students");
+                                        schoolStudents = schoolStudents.Where(s => s.IsTrackDaily == false).ToList();
+                                    }
 
                                     Logging.Info("Loaded " + schoolStudents.Count + " students for school " + schoolID);
 

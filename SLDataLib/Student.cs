@@ -18,6 +18,7 @@ namespace SLDataLib
         public string HomeRoom { get; set; }
         public string TelephoneNumber { get; set; }
         public List<Contact> Contacts { get; set; }
+        public bool IsTrackDaily { get; set; }
         
         public Student() { }
 
@@ -29,8 +30,7 @@ namespace SLDataLib
             {
                 Connection = connection,
                 CommandType = CommandType.Text,
-                CommandText = "SELECT Student.cStudentNumber, Student.cFirstName, Student.cLastName, Grades.cName AS Grade, Homeroom.cName AS Homeroom, School.cCode AS SchoolGovID, StudentStatus.iStudentID, StudentStatus.dInDate, StudentStatus.dOutDate, Student.iTrackID, Student.iSchoolID, Location.cPhone AS StudentPhoneNumber FROM StudentStatus LEFT OUTER JOIN Homeroom RIGHT OUTER JOIN Grades RIGHT OUTER JOIN Student LEFT OUTER JOIN Location ON Student.iLocationID = Location.iLocationID ON Grades.iGradesID = Student.iGradesID ON Homeroom.iHomeroomID = Student.iHomeroomID ON StudentStatus.iStudentID = Student.iStudentID LEFT OUTER JOIN School ON StudentStatus.iSchoolID = School.iSchoolID" +
-                              " WHERE (dbo.School.cCode = @SCHOOLID) AND (dbo.StudentStatus.dInDate <= @ENDDATE) AND (dbo.StudentStatus.dOutDate = @NULLDATE OR dbo.StudentStatus.dOutDate >= @STARTDATE) AND (dbo.Student.iTrackID <> 0) ORDER BY dbo.Student.cLastName, dbo.Student.cFirstName"
+                CommandText = "SELECT Student.cStudentNumber, Student.cFirstName, Student.cLastName, Grades.cName AS Grade, Homeroom.cName AS Homeroom, School.cCode AS SchoolGovID, StudentStatus.iStudentID, StudentStatus.dInDate, StudentStatus.dOutDate, Student.iTrackID, Student.iSchoolID, Location.cPhone AS StudentPhoneNumber, Track.lDaily FROM Homeroom RIGHT OUTER JOIN Grades RIGHT OUTER JOIN Location RIGHT OUTER JOIN Student LEFT OUTER JOIN Track ON Student.iTrackID = Track.iTrackID ON Location.iLocationID = Student.iLocationID ON Grades.iGradesID = Student.iGradesID ON Homeroom.iHomeroomID = Student.iHomeroomID RIGHT OUTER JOIN StudentStatus ON Student.iStudentID = StudentStatus.iStudentID LEFT OUTER JOIN School ON StudentStatus.iSchoolID = dbo.School.iSchoolID WHERE (dbo.School.cCode = @SCHOOLID) AND (dbo.StudentStatus.dInDate <= @ENDDATE) AND (dbo.StudentStatus.dOutDate = @NULLDATE OR dbo.StudentStatus.dOutDate >= @STARTDATE) AND (dbo.Student.iTrackID <> 0) ORDER BY dbo.Student.cLastName, dbo.Student.cFirstName"
             };
             sqlCommand.Parameters.AddWithValue("SCHOOLID", SchoolGovID);
             sqlCommand.Parameters.AddWithValue("NULLDATE", Helpers.DatabaseNullDate);
@@ -56,7 +56,8 @@ namespace SLDataLib
                         Contacts =  new List<Contact>(),
                         SchoolGovID = dataReader["SchoolGovID"].ToString().Trim(),
                         SchoolDatabaseID = Helpers.ParseInt(dataReader["iSchoolID"].ToString().Trim()),
-                        TelephoneNumber = dataReader["StudentPhoneNumber"].ToString().Trim()
+                        TelephoneNumber = dataReader["StudentPhoneNumber"].ToString().Trim(),
+                        IsTrackDaily = Helpers.ParseBool(dataReader["lDaily"].ToString().Trim())
                     });
                 }
             }

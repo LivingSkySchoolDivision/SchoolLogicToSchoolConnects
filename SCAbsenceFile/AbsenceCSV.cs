@@ -28,7 +28,8 @@ namespace SCAbsenceFile
 
             // Headings
             StringBuilder headingLine = new StringBuilder();
-            headingLine.Append("\"StudentID\"," +
+            headingLine.Append("\"SchoolID\"," +
+                               "\"StudentID\"," +
                                "\"StudentLastName\"," +
                                "\"StudentFirstName\"," +
                                "\"HomePhone\"," +
@@ -68,6 +69,7 @@ namespace SCAbsenceFile
                         }
 
                         studentLine.Clear();
+                        studentLine.Append("\"" + student.SchoolGovID + "\"" + ",");
                         studentLine.Append("\"" + student.StudentNumber + "\"" + ",");
                         studentLine.Append("\"" + student.Surname + "\"" + ",");
                         studentLine.Append("\"" + student.GivenName + "\"" + ",");
