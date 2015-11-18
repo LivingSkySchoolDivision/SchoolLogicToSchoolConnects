@@ -16,16 +16,33 @@ namespace SLDataLib
         public int LateMinutes { get; set; }
         public bool IsExcused { get; set; }
         public int SchoolDatabaseID { get; set; }
+        public string Status { get; set; }
 
         public Absence()
         {
             
         }
 
+        public bool IsAbsence
+        {
+            get
+            {
+                return this.Status.ToLower() == "absent";
+            }
+        }
+
         public bool IsLate
         {
             get {
-                return this.LateMinutes > 0;
+                return this.Status.ToLower() == "late";
+            }
+        }
+
+        public bool IsLeaveEarly
+        {
+            get
+            {
+                return this.Status.ToLower() == "leave early";
             }
         }
 
@@ -42,7 +59,7 @@ namespace SLDataLib
                     Connection = connection,
                     CommandType = CommandType.Text,
                     CommandText =
-                        "SELECT Attendance.iStudentID, Attendance.dDate, Attendance.iBlockNumber, Attendance.iMinutes, Attendance.iSchoolID, AttendanceReasons.lExcusable FROM Attendance LEFT OUTER JOIN AttendanceReasons ON Attendance.iAttendanceReasonsID = AttendanceReasons.iAttendanceReasonsID" +
+                        "SELECT Attendance.iStudentID, Attendance.dDate, Attendance.iBlockNumber, Attendance.iMinutes, Attendance.iSchoolID, AttendanceReasons.lExcusable, AttendanceStatus.cName AS AttendanceStatus FROM Attendance LEFT OUTER JOIN AttendanceStatus ON Attendance.iAttendanceStatusID = AttendanceStatus.iAttendanceStatusID LEFT OUTER JOIN AttendanceReasons ON Attendance.iAttendanceReasonsID = AttendanceReasons.iAttendanceReasonsID" +
                         " WHERE (Attendance.dDate <= @ENDDATE) AND (Attendance.dDate >= @STARTDATE) ORDER BY Attendance.iStudentID ASC, Attendance.iBlockNumber ASC"
                 };
                 // (Attendance.iSchoolID = @SCHOOLID) AND
@@ -72,7 +89,8 @@ namespace SLDataLib
                             IsExcused = Helpers.ParseBool(dataReader["lExcusable"].ToString().Trim()),
                             LateMinutes = Helpers.ParseInt(dataReader["iMinutes"].ToString().Trim()),
                             SchoolDatabaseID = Helpers.ParseInt(dataReader["iSchoolID"].ToString().Trim()),
-                            StudentDatabaseID = Helpers.ParseInt(dataReader["iStudentID"].ToString().Trim())
+                            StudentDatabaseID = Helpers.ParseInt(dataReader["iStudentID"].ToString().Trim()),
+                            Status = dataReader["AttendanceStatus"].ToString().Trim()
                         });
                     }
                 }
@@ -90,7 +108,7 @@ namespace SLDataLib
         {
             if (GetCache(connection, startDate, endDate).ContainsKey(student.DatabaseID))
             {
-                return GetCache(connection, startDate, endDate)[student.DatabaseID];
+                return GetCache(connection, startDate, endDate)[student.DatabaseID].Where(a => !a.IsExcused && a.IsAbsence).ToList();
             }
             else
             {
