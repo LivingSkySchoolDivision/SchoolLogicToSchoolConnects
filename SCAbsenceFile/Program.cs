@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SLDataLib;
+using SLDataLib.Repositories;
 
 namespace SCAbsenceFile
 {
@@ -65,7 +66,7 @@ namespace SCAbsenceFile
                 bool onlyPeriodAttendance = false;
                 bool onlyDailyAttendance = false;
 
-                List<string> selectedSchools = new List<string>();
+                List<string> selectedSchoolIDs = new List<string>();
 
                 foreach (string argument in args)
                 {
@@ -75,7 +76,7 @@ namespace SCAbsenceFile
                         {
                             if (!string.IsNullOrEmpty(enteredID))
                             {
-                                selectedSchools.Add(enteredID);
+                                selectedSchoolIDs.Add(enteredID);
                             }
                         }
                     }
@@ -127,7 +128,7 @@ namespace SCAbsenceFile
                     }
                 }
 
-                if (((selectedSchools.Count <= 0) && (!allSchools)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
+                if (((selectedSchoolIDs.Count <= 0) && (!allSchools)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
                 {
                     SendSyntax();
                 }
@@ -144,18 +145,27 @@ namespace SCAbsenceFile
                             Logging.Info(" File creation started: " + DateTime.Now);
 
                             Dictionary<Student, List<Absence>> studentsWithAbsences = new Dictionary<Student, List<Absence>>();
+                            List<School> selectedSchools = new List<School>();
+                            AbsenceRepository absenceRepo = new AbsenceRepository();
+                            StudentRepository studentRepo = new StudentRepository();
                             using (
                                 SqlConnection connection = new SqlConnection(Config.dbConnectionString_SchoolLogic))
                             {
+                                SchoolRepository schoolRepo = new SchoolRepository(connection);
+
                                 if (allSchools)
                                 {
-                                    selectedSchools.AddRange(School.LoadSchoolIDNumbers(connection));
+                                    selectedSchools = schoolRepo.GetAll();
                                 }
-
-                                Logging.Info("Loading students");
-                                foreach (string schoolID in selectedSchools)
+                                else
                                 {
-                                    List<Student> schoolStudents = Student.LoadForSchool(connection, schoolID, parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
+                                    selectedSchools = schoolRepo.Get(selectedSchoolIDs);
+                                }
+                                
+                                Logging.Info("Loading students");
+                                foreach (School school in selectedSchools)
+                                {
+                                    List<Student> schoolStudents = studentRepo.LoadForSchool(connection, school, parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
 
                                     if (onlyDailyAttendance && !onlyPeriodAttendance)
                                     {
@@ -169,14 +179,14 @@ namespace SCAbsenceFile
                                         schoolStudents = schoolStudents.Where(s => s.IsTrackDaily == false).ToList();
                                     }
 
-                                    Logging.Info("Loaded " + schoolStudents.Count + " students for school " + schoolID);
+                                    Logging.Info("Loaded " + schoolStudents.Count + " students for school " + school.Name);
 
                                     int schoolAbsenceCount = 0;
 
                                     // Load student absences
                                     foreach (Student student in schoolStudents)
                                     {
-                                        List<Absence> studentAbsences = Absence.LoadAbsencesFor(connection, student,
+                                        List<Absence> studentAbsences = absenceRepo.LoadAbsencesFor(connection, school, student,
                                             parsedDate, parsedDate.AddHours(23.5));
                                         if (studentAbsences.Count > 0)
                                         {
@@ -184,7 +194,7 @@ namespace SCAbsenceFile
                                         }
                                         schoolAbsenceCount += studentAbsences.Count;
                                     }
-                                    Logging.Info(" Loaded " + schoolAbsenceCount + " absences for school " + schoolID);
+                                    Logging.Info(" Loaded " + schoolAbsenceCount + " absences for school " + school.Name);
                                 }
                             }
 

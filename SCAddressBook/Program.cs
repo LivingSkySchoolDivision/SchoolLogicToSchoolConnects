@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SLDataLib;
+using SLDataLib.Repositories;
 
 namespace SCAddressBook
 {
@@ -25,7 +26,7 @@ namespace SCAddressBook
                 List<string> grades = new List<string>() { "pk", "k", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
                 bool allSchools = false;
 
-                List<string> selectedSchools = new List<string>();
+                List<string> selectedSchoolNumbers = new List<string>();
 
                 foreach (string argument in args)
                 {
@@ -35,7 +36,7 @@ namespace SCAddressBook
                         {
                             if (!string.IsNullOrEmpty(enteredID))
                             {
-                                selectedSchools.Add(enteredID);
+                                selectedSchoolNumbers.Add(enteredID);
                             }
                         }
                     }
@@ -80,7 +81,7 @@ namespace SCAddressBook
                     }
                 }
 
-                if (((selectedSchools.Count <= 0) && (!allSchools)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
+                if (((selectedSchoolNumbers.Count <= 0) && (!allSchools)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
                 {
                     SendSyntax();
                 } 
@@ -97,27 +98,37 @@ namespace SCAddressBook
                             Logging.Info(" File creation started: " + DateTime.Now);
 
                             List<Student> reportStudents = new List<Student>();
+                            List<School> selectedSchools = new List<School>();
+
+                            ContactRepository contactRepo = new ContactRepository();
+                            StudentRepository studentRepo = new StudentRepository();
                             using (SqlConnection connection = new SqlConnection(Config.dbConnectionString_SchoolLogic))
                             {
+                                SchoolRepository schoolRepo = new SchoolRepository(connection);
+
                                 if (allSchools)
                                 {
-                                    selectedSchools.AddRange(School.LoadSchoolIDNumbers(connection));
+                                    selectedSchools = schoolRepo.GetAll();
+                                }
+                                else
+                                {
+                                    selectedSchools = schoolRepo.Get(selectedSchoolNumbers);
                                 }
 
                                 Logging.Info("Loading students");
-                                foreach (string schoolID in selectedSchools)
+                                foreach (School school in selectedSchools)
                                 {
-                                    List<Student> schoolStudents = Student.LoadForSchool(connection, schoolID,
+                                    List<Student> schoolStudents = studentRepo.LoadForSchool(connection, school,
                                         parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
 
                                     Logging.Info("Loaded " + schoolStudents.Count + " students for school " +
-                                                 schoolID);
+                                                 school.Name);
 
                                     // Load student contacts
                                     Logging.Info("Loading student contacts");
                                     foreach (Student student in schoolStudents)
                                     {
-                                        student.Contacts = Contact.LoadForStudent(connection, student.DatabaseID);
+                                        student.Contacts =contactRepo.LoadForStudent(connection, student.DatabaseID);
                                     }
                                     reportStudents.AddRange(schoolStudents);
                                 }

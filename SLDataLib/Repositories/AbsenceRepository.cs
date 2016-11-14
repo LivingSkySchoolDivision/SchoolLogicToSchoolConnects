@@ -8,47 +8,11 @@ using System.Threading.Tasks;
 
 namespace SLDataLib
 {
-    public class Absence
+    public class AbsenceRepository
     {
-        public int StudentDatabaseID { get; set; }
-        public DateTime Date { get; set; }
-        public int BlockNumber { get; set; }
-        public int LateMinutes { get; set; }
-        public bool IsExcused { get; set; }
-        public int SchoolDatabaseID { get; set; }
-        public string Status { get; set; }
+        private Dictionary<int, List<Absence>> _cache;
 
-        public Absence()
-        {
-            
-        }
-
-        public bool IsAbsence
-        {
-            get
-            {
-                return this.Status.ToLower() == "absent";
-            }
-        }
-
-        public bool IsLate
-        {
-            get {
-                return this.Status.ToLower() == "late";
-            }
-        }
-
-        public bool IsLeaveEarly
-        {
-            get
-            {
-                return this.Status.ToLower() == "leave early";
-            }
-        }
-
-        private static Dictionary<int, List<Absence>> _cache;
-
-        private static Dictionary<int, List<Absence>> GetCache(SqlConnection connection, DateTime startDate, DateTime endDate)
+        private Dictionary<int, List<Absence>> GetCache(SqlConnection connection, DateTime startDate, DateTime endDate)
         {
             if (_cache == null)
             {
@@ -76,7 +40,7 @@ namespace SLDataLib
                     while (dataReader.Read())
                     {
                         int studentID = Helpers.ParseInt(dataReader["iStudentID"].ToString().Trim());
-                        
+
                         if (!_cache.ContainsKey(studentID))
                         {
                             _cache.Add(studentID, new List<Absence>());
@@ -103,19 +67,18 @@ namespace SLDataLib
         }
 
 
-        public static List<Absence> LoadAbsencesFor(SqlConnection connection, Student student, DateTime startDate,
+        public List<Absence> LoadAbsencesFor(SqlConnection connection, School school, Student student, DateTime startDate,
             DateTime endDate)
         {
             if (GetCache(connection, startDate, endDate).ContainsKey(student.DatabaseID))
             {
-                return GetCache(connection, startDate, endDate)[student.DatabaseID].Where(a => !a.IsExcused && a.IsAbsence).ToList();
+                return GetCache(connection, startDate, endDate)[student.DatabaseID].Where(a => !a.IsExcused && a.IsAbsence && a.SchoolDatabaseID == school.DatabaseID).ToList();
             }
             else
             {
                 return new List<Absence>();
             }
         }
-
 
     }
 }

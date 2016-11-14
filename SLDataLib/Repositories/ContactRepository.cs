@@ -1,23 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SLDataLib
 {
-    public class Contact
+    public class ContactRepository
     {
-        public string GivenName { get; set; }
-        public string Surname { get; set; }
-        public string Relation { get; set; }
-        public int Priority { get; set; }
-        public string Telephone_Home { get; set; }
-        public string Telephone_Work { get; set; }
-        public string Telephone_Cell { get; set; }
-        public string Email { get; set; }
-        public bool LivesWithStudent { get; set; }
-        public Contact() { }
-        
-        public static List<Contact> LoadForStudent(SqlConnection connection, int iStudentID)
+        public List<Contact> LoadForStudent(SqlConnection connection, int iStudentID)
         {
 
             List<Contact> studentContacts = new List<Contact>();
@@ -57,6 +50,5 @@ namespace SLDataLib
 
             return studentContacts;
         }
-
     }
 }
