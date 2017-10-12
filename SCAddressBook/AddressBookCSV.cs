@@ -39,25 +39,22 @@ namespace SCAddressBook
             {
                 foreach (Contact contact in student.Contacts)
                 {
-                    if ((Helpers.ValidTelephoneNumber(contact.Telephone_Home)) || (Helpers.ValidTelephoneNumber(contact.Email)) || (Helpers.ValidTelephoneNumber(contact.Telephone_Cell)))
-                    {
-                        studentLine.Clear();
-                        studentLine.Append("\"" + student.SchoolGovID + "\"" + ",");
-                        studentLine.Append("\"" + student.StudentNumber + "\"" + ",");
-                        studentLine.Append("\"" + student.Surname + "\"" + ",");
-                        studentLine.Append("\"" + student.GivenName + "\"" + ",");
-                        studentLine.Append("\"" + student.Grade + "\"" + ",");
-                        studentLine.Append("\"" + student.HomeRoom + "\"" + ",");
-                        studentLine.Append("\"" + contact.Surname + "\"" + ",");
-                        studentLine.Append("\"" + contact.GivenName + "\"" + ",");
-                        studentLine.Append("\"" + contact.Relation + "\"" + ",");
-                        studentLine.Append("\"" + contact.Priority + "\"" + ",");
-                        studentLine.Append("\"" + Helpers.FormatTelephoneNumber_JustNumbers(contact.Telephone_Home) + "\"" + ",");
-                        studentLine.Append("\"" + Helpers.FormatTelephoneNumber_JustNumbers(contact.Telephone_Cell) + "\"" + ",");
-                        studentLine.Append("\"" + string.Empty + "\"" + ",");
-                        studentLine.Append("\"" + contact.Email + "\"" + "");
-                        writer.WriteLine(studentLine.ToString());
-                    }
+                    studentLine.Clear();
+                    studentLine.Append("\"" + student.SchoolGovID + "\"" + ",");
+                    studentLine.Append("\"" + student.StudentNumber + "\"" + ",");
+                    studentLine.Append("\"" + student.Surname + "\"" + ",");
+                    studentLine.Append("\"" + student.GivenName + "\"" + ",");
+                    studentLine.Append("\"" + student.Grade + "\"" + ",");
+                    studentLine.Append("\"" + student.HomeRoom + "\"" + ",");
+                    studentLine.Append("\"" + contact.Surname + "\"" + ",");
+                    studentLine.Append("\"" + contact.GivenName + "\"" + ",");
+                    studentLine.Append("\"" + contact.Relation + "\"" + ",");
+                    studentLine.Append("\"" + contact.Priority + "\"" + ",");
+                    studentLine.Append("\"" + Helpers.FormatTelephoneNumber_JustNumbers(contact.Telephone_Home) + "\"" + ",");
+                    studentLine.Append("\"" + Helpers.FormatTelephoneNumber_JustNumbers(contact.Telephone_Cell) + "\"" + ",");
+                    studentLine.Append("\"" + string.Empty + "\"" + ",");
+                    studentLine.Append("\"" + contact.Email + "\"" + "");
+                    writer.WriteLine(studentLine.ToString());                    
                 }
             }
 
