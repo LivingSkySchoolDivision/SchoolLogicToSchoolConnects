@@ -21,7 +21,7 @@ namespace SCAbsenceFile
             return thisDate.ToString("yyyy-M-d");
         }
 
-        public static MemoryStream GenerateCSV(Dictionary<Student, List<Absence>> studentsWithAbsences)
+        public static MemoryStream GenerateCSV(Dictionary<Student, List<Absence>> studentsWithAbsences, List<int> softBlocks)
         {
             MemoryStream csvFile = new MemoryStream();
             StreamWriter writer = new StreamWriter(csvFile, Encoding.UTF8);
@@ -42,8 +42,22 @@ namespace SCAbsenceFile
             StringBuilder studentLine = new StringBuilder();
             foreach (Student student in studentsWithAbsences.Keys)
             {
-                List<Absence> unexcusedAbsences = studentsWithAbsences[student].Where(abs => abs.IsLate == false).Where(abs => abs.IsExcused == false).ToList();
-                
+                List<Absence> unexcusedAbsences = studentsWithAbsences[student].Where(abs => abs.IsLate == false).Where(abs => abs.IsExplained == false).ToList();
+
+                // Skip students with absences not in the allowed list, but list the absences
+                bool okToListStudent = false;
+                foreach(Absence abs in unexcusedAbsences)
+                {
+                    if (softBlocks.Contains(abs.BlockNumber))
+                    {
+                        okToListStudent = true;
+                    }
+                }
+                if (okToListStudent == false)
+                {
+                    continue;
+                }
+
                 if (unexcusedAbsences.Count > 0)
                 {
                     // Seperate this into dates - the report SHOULD only be run for a single date, but just in case it doesnt, and just in case I 

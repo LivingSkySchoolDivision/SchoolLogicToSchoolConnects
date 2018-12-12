@@ -44,6 +44,10 @@ namespace SCAbsenceFile
             Console.WriteLine(" /grades:pk,k,1,2,3,4,5,6,7,8,9,10,11,12");
             Console.WriteLine("");
             Console.WriteLine(" /blocks:1,2,3,4,5,6,7,8");
+            Console.WriteLine(" Only include a student if they have an absence in a specified block, but include all of their absences, even for non-specified blocks");
+            Console.WriteLine("");
+            Console.WriteLine(" /hardblocks:1,2,3,4,5,6,7,8");
+            Console.WriteLine(" Only include absences for the specified blocks. Will not include any absences from not allowed blocks.");
             Console.WriteLine("");
             Console.WriteLine("EXAMPLES:");
             Console.WriteLine("scabsencefile.exe /allschools /filename:LSKYSDAbsencePeriod.csv /date:today /JustPeriodAttendance");
@@ -64,7 +68,8 @@ namespace SCAbsenceFile
                 string date = string.Empty;
                 List<string> grades = new List<string>() { "pk", "k", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
                 // There aren't nearly this many blocks in a day, but this future proofs it. It can't pull absences for blocks that dont exist
-                List<int> blocks = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; 
+                List<int> softBlocks = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+                List<int> hardBlocks = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
                 bool allSchools = false;
                 bool onlyPeriodAttendance = false;
                 bool onlyDailyAttendance = false;
@@ -120,7 +125,7 @@ namespace SCAbsenceFile
                         string blob = argument.Substring(8, argument.Length - 8);
                         char[] splitChars = { ',', ';' };
                         List<string> unparsedBlocks = blob.Split(splitChars).ToList();
-                        blocks.Clear();
+                        softBlocks.Clear();
                         foreach (string s in unparsedBlocks)
                         {
                             if (!string.IsNullOrEmpty(s))
@@ -130,7 +135,7 @@ namespace SCAbsenceFile
                                 {
                                     if (parsed > 0)
                                     {
-                                        blocks.Add(parsed);
+                                        softBlocks.Add(parsed);
                                     }
                                 }
                             }
@@ -211,7 +216,7 @@ namespace SCAbsenceFile
                                     foreach (Student student in schoolStudents)
                                     {
                                         List<Absence> studentAbsences = absenceRepo.LoadAbsencesFor(connection, school, student,
-                                            parsedDate, parsedDate.AddHours(23.5)).Where(abs => blocks.Contains(abs.BlockNumber)).ToList();
+                                            parsedDate, parsedDate.AddHours(23.5)).Where(abs => hardBlocks.Contains(abs.BlockNumber)).ToList();
                                         if (studentAbsences.Count > 0)
                                         {
                                             studentsWithAbsences.Add(student, studentAbsences);
@@ -224,7 +229,7 @@ namespace SCAbsenceFile
 
                             Logging.Info("Creating CSV data");
 
-                            MemoryStream csvContents = AbsenceCSV.GenerateCSV(studentsWithAbsences);
+                            MemoryStream csvContents = AbsenceCSV.GenerateCSV(studentsWithAbsences, softBlocks);
                             Logging.Info("Saving CSV file (" + fileName + ")");
                             if (FileHelpers.FileExists(fileName))
                             {

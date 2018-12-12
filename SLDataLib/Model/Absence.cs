@@ -15,6 +15,7 @@ namespace SLDataLib
         public int BlockNumber { get; set; }
         public int LateMinutes { get; set; }
         public bool IsExcused { get; set; }
+        public bool IsExplained { get; set; }
         public int SchoolDatabaseID { get; set; }
         public string Status { get; set; }
 

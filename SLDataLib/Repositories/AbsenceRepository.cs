@@ -23,7 +23,7 @@ namespace SLDataLib
                     Connection = connection,
                     CommandType = CommandType.Text,
                     CommandText =
-                        "SELECT Attendance.iStudentID, Attendance.dDate, Attendance.iBlockNumber, Attendance.iMinutes, Attendance.iSchoolID, AttendanceReasons.lExcusable, AttendanceStatus.cName AS AttendanceStatus FROM Attendance LEFT OUTER JOIN AttendanceStatus ON Attendance.iAttendanceStatusID = AttendanceStatus.iAttendanceStatusID LEFT OUTER JOIN AttendanceReasons ON Attendance.iAttendanceReasonsID = AttendanceReasons.iAttendanceReasonsID" +
+                        "SELECT Attendance.iStudentID, Attendance.dDate, Attendance.iBlockNumber, Attendance.iMinutes, Attendance.iSchoolID, AttendanceReasons.lExcusable, Attendance.iAttendanceReasonsID as reasonID, AttendanceStatus.cName AS AttendanceStatus FROM Attendance LEFT OUTER JOIN AttendanceStatus ON Attendance.iAttendanceStatusID = AttendanceStatus.iAttendanceStatusID LEFT OUTER JOIN AttendanceReasons ON Attendance.iAttendanceReasonsID = AttendanceReasons.iAttendanceReasonsID" +
                         " WHERE (Attendance.dDate <= @ENDDATE) AND (Attendance.dDate >= @STARTDATE) ORDER BY Attendance.iStudentID ASC, Attendance.iBlockNumber ASC"
                 };
                 // (Attendance.iSchoolID = @SCHOOLID) AND
@@ -46,11 +46,32 @@ namespace SLDataLib
                             _cache.Add(studentID, new List<Absence>());
                         }
 
+                        // Figure out if this absence is excused
+                        // As of September 2018, the ONLY "unexcused" absences are:
+                        //  - No reason
+                        //  - Absence: Known reason
+                        //  - Absence: Medical
+                        // Everything else is not considered an absence
+
+                        int reasonID = Helpers.ParseInt(dataReader["reasonID"].ToString().Trim());
+                        bool isExplained = reasonID != 0;
+                        bool isExcused = true;
+                        if (isExplained == false)
+                        {
+                            isExcused = false;
+                        }
+                        // Known Reason and Medical are reason IDs 98 and 100
+                        if ((reasonID == 98) || (reasonID == 100))
+                        {
+                            isExcused = false;
+                        }
+
                         _cache[studentID].Add(new Absence()
                         {
                             BlockNumber = Helpers.ParseInt(dataReader["iBlockNumber"].ToString().Trim()),
                             Date = Helpers.ParseDate(dataReader["dDate"].ToString().Trim()),
-                            IsExcused = Helpers.ParseBool(dataReader["lExcusable"].ToString().Trim()),
+                            IsExcused = isExcused,
+                            IsExplained = isExplained,
                             LateMinutes = Helpers.ParseInt(dataReader["iMinutes"].ToString().Trim()),
                             SchoolDatabaseID = Helpers.ParseInt(dataReader["iSchoolID"].ToString().Trim()),
                             StudentDatabaseID = Helpers.ParseInt(dataReader["iStudentID"].ToString().Trim()),
@@ -65,8 +86,7 @@ namespace SLDataLib
             return _cache;
 
         }
-
-
+        
         public List<Absence> LoadAbsencesFor(SqlConnection connection, School school, Student student, DateTime startDate,
             DateTime endDate)
         {
