@@ -52,8 +52,9 @@ namespace SCAddressBook
                 string date = string.Empty;
                 List<string> grades = new List<string>() { "pk", "k", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
                 bool allSchools = false;
+                List<string> options = new List<string>();
 
-                List<string> selectedSchoolNumbers = new List<string>();
+                List<string> selectedSchoolIDs = new List<string>();
 
                 foreach (string argument in args)
                 {
@@ -63,12 +64,13 @@ namespace SCAddressBook
                         {
                             if (!string.IsNullOrEmpty(enteredID))
                             {
-                                selectedSchoolNumbers.Add(enteredID);
+                                selectedSchoolIDs.Add(enteredID);
                             }
                         }
                     }
                     else if (argument.ToLower().StartsWith("/allschools"))
                     {
+                        options.Add("allschools");
                         allSchools = true;
                     }
                     else if (argument.ToLower().StartsWith("/filename:"))
@@ -112,7 +114,7 @@ namespace SCAddressBook
                     }
                 }
 
-                if (((selectedSchoolNumbers.Count <= 0) && (!allSchools)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
+                if (((selectedSchoolIDs.Count <= 0) && (!allSchools)) || (string.IsNullOrEmpty(fileName)) || (string.IsNullOrEmpty(date)))
                 {
                     SendSyntax();
                 } 
@@ -125,8 +127,12 @@ namespace SCAddressBook
                         try
                         {
                             Log.ToLog("----------------------------------------------------------------");
-                            Log.Info("Creating address book file for date " + parsedDate.ToLongDateString());
-                            Log.Info(" File creation started: " + DateTime.Now);
+                            Log.Info("Started: " + DateTime.Now);
+                            Log.Info("Date: " + date);
+                            Log.Info("Output: " + fileName);
+                            Log.Info("Grades: " + grades.ToCommaSeparatedString());
+                            Log.Info("Options: " + options.ToCommaSeparatedString());
+                            Log.Info("Schools: " + (allSchools ? "ALL" : selectedSchoolIDs.ToCommaSeparatedString()));
 
                             List<Student> reportStudents = new List<Student>();
                             List<School> selectedSchools = new List<School>();
@@ -143,7 +149,7 @@ namespace SCAddressBook
                                 }
                                 else
                                 {
-                                    selectedSchools = schoolRepo.Get(selectedSchoolNumbers);
+                                    selectedSchools = schoolRepo.Get(selectedSchoolIDs);
                                 }
 
                                 Log.Info("Loading students");

@@ -77,6 +77,7 @@ namespace SCAbsenceFile
                 bool allSchools = false;
                 bool onlyPeriodAttendance = false;
                 bool onlyDailyAttendance = false;
+                List<string> options = new List<string>();
 
                 List<string> selectedSchoolIDs = new List<string>();
 
@@ -98,14 +99,17 @@ namespace SCAbsenceFile
                     }
                     else if (argument.ToLower().StartsWith("/allschools"))
                     {
+                        options.Add("allschools");
                         allSchools = true;
                     }
                     else if (argument.ToLower().StartsWith("/justperiodattendance"))
                     {
+                        options.Add("justperiodattendance");
                         onlyPeriodAttendance = true;
                     }
                     else if (argument.ToLower().StartsWith("/justdailyattendance"))
                     {
+                        options.Add("justdailyattendance");
                         onlyDailyAttendance = true;
                     }
                     else if (argument.ToLower().StartsWith("/date:"))
@@ -199,8 +203,14 @@ namespace SCAbsenceFile
                         try
                         {
                             Log.ToLog("----------------------------------------------------------------");
-                            Log.Info(" Creating absence file for date " + parsedDate.ToLongDateString());
-                            Log.Info(" File creation started: " + DateTime.Now);
+                            Log.Info("Started: " + DateTime.Now);
+                            Log.Info("Date: " + date);
+                            Log.Info("Output: " + fileName);                            
+                            Log.Info("Grades: " + grades.ToCommaSeparatedString());
+                            Log.Info("Soft Blocks: " + softBlocks.ToCommaSeparatedString());
+                            Log.Info("Hard Blocks: " + hardBlocks.ToCommaSeparatedString());
+                            Log.Info("Options: " + options.ToCommaSeparatedString());
+                            Log.Info("Schools: " + (allSchools ? "ALL" : selectedSchoolIDs.ToCommaSeparatedString()));
 
                             Dictionary<Student, List<Absence>> studentsWithAbsences = new Dictionary<Student, List<Absence>>();
                             List<School> selectedSchools = new List<School>();
