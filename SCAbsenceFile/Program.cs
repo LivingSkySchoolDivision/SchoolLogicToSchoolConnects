@@ -139,7 +139,28 @@ namespace SCAbsenceFile
                                     }
                                 }
                             }
-                        }                
+                        }
+                    }
+                    else if (argument.ToLower().StartsWith("/hardblocks:"))
+                    {
+                        string blob = argument.Substring(12, argument.Length - 12);
+                        char[] splitChars = { ',', ';' };
+                        List<string> unparsedBlocks = blob.Split(splitChars).ToList();
+                        hardBlocks.Clear();
+                        foreach (string s in unparsedBlocks)
+                        {
+                            if (!string.IsNullOrEmpty(s))
+                            {
+                                int parsed = 0;
+                                if (int.TryParse(s, out parsed))
+                                {
+                                    if (parsed > 0)
+                                    {
+                                        hardBlocks.Add(parsed);
+                                    }
+                                }
+                            }
+                        }
                     }
                     else if (argument.ToLower().StartsWith("/grades:"))
                     {
