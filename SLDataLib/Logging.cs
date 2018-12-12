@@ -4,17 +4,21 @@ using System.Text;
 
 namespace SLDataLib
 {
-    public static class Logging
+    public class Logging
     {
-        /// <summary>
-        /// Returns the name of the log file to use
-        /// </summary>
-        public static string LogfileName()
+        public string LogFileName { get; set; }
+
+        public Logging()
         {
-            return "scr_log_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" + DateTime.Now.Day + ".log";
+            this.LogFileName = "scr_log_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" + DateTime.Now.Day + ".log";
+        }
+
+        public Logging(string fileName)
+        {
+            this.LogFileName = fileName;
         }
         
-        public static void Error(string message)
+        public void Error(string message)
         {
             ConsoleColor previousColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Red;
@@ -23,7 +27,7 @@ namespace SLDataLib
             ToLog("ERROR: " + message);
         }
 
-        public static void Info(string message)
+        public void Info(string message)
         {
             ConsoleColor previousColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -32,9 +36,9 @@ namespace SLDataLib
             ToLog("INFO: " + message);
         }
         
-        public static void ToLog(string message)
+        public void ToLog(string message)
         {
-            using (FileStream logfileStream = new FileStream(LogfileName(), FileMode.Append, FileAccess.Write))
+            using (FileStream logfileStream = new FileStream(LogFileName, FileMode.Append, FileAccess.Write))
             {
                 using (StreamWriter writer = new StreamWriter(logfileStream, Encoding.UTF8))
                 {

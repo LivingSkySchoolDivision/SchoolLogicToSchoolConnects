@@ -12,6 +12,8 @@ namespace SCAbsenceFile
 {
     class Program
     {
+        static Logging Log = new Logging();
+
         static void SendSyntax()
         {
             Console.WriteLine("SYNTAX:");
@@ -23,17 +25,19 @@ namespace SCAbsenceFile
             Console.WriteLine(" SchoolLogic.");
             Console.WriteLine(" Required, if not using //allschools.");
             Console.WriteLine("");
-            Console.WriteLine(" /allschools");
-            Console.WriteLine(" Select all schools (ignoring //schoolid)");
-            Console.WriteLine("");
             Console.WriteLine(" /filename:filename.csv");
-            Console.WriteLine(" Specify the filename");
-            Console.WriteLine("");
-            Console.WriteLine(""); 
-            Console.WriteLine(" /day:[today|yesterday|now]");
+            Console.WriteLine(" Specify the filename to use for the output");
+            Console.WriteLine("");            
+            Console.WriteLine(" /date:[today|yesterday|now]");
             Console.WriteLine(" Which day would you like absences from.");
             Console.WriteLine("");
             Console.WriteLine(" OPTIONAL:");
+            Console.WriteLine("");
+            Console.WriteLine(" /logfilename:filename.log");
+            Console.WriteLine(" Specify the filename to use for the log");
+            Console.WriteLine("");
+            Console.WriteLine(" /allschools");
+            Console.WriteLine(" Select all schools (ignoring //schoolid)");
             Console.WriteLine("");
             Console.WriteLine(" /JustPeriodAttendance");
             Console.WriteLine(" Only include students who are in tracks using period attendance.");
@@ -120,6 +124,10 @@ namespace SCAbsenceFile
                             date = DateTime.Now.ToString();
                         }
                     }
+                    else if (argument.ToLower().StartsWith("/logfilename:"))
+                    {
+                        Log.LogFileName = argument.Substring(13, argument.Length - 13);
+                    }
                     else if (argument.ToLower().StartsWith("/blocks:"))
                     {
                         string blob = argument.Substring(8, argument.Length - 8);
@@ -166,13 +174,13 @@ namespace SCAbsenceFile
                     {
                         string gradesRaw = argument.Substring(8, argument.Length - 8).Trim('\"').Trim();
                         grades = new List<string>();
-                        Logging.Info("Limiting student selection to specific grades");
+                        Log.Info("Limiting student selection to specific grades");
                         foreach (string ss in gradesRaw.Split(','))
                         {
                             if (!string.IsNullOrEmpty(ss))
                             {
                                 grades.Add(ss.ToLower());
-                                Logging.Info(" Adding grade \"" + ss + "\"");
+                                Log.Info(" Adding grade \"" + ss + "\"");
                             }
                         }
                     }
@@ -190,9 +198,9 @@ namespace SCAbsenceFile
 
                         try
                         {
-                            Logging.ToLog("----------------------------------------------------------------");
-                            Logging.Info(" Creating absence file for date " + parsedDate.ToLongDateString());
-                            Logging.Info(" File creation started: " + DateTime.Now);
+                            Log.ToLog("----------------------------------------------------------------");
+                            Log.Info(" Creating absence file for date " + parsedDate.ToLongDateString());
+                            Log.Info(" File creation started: " + DateTime.Now);
 
                             Dictionary<Student, List<Absence>> studentsWithAbsences = new Dictionary<Student, List<Absence>>();
                             List<School> selectedSchools = new List<School>();
@@ -211,25 +219,25 @@ namespace SCAbsenceFile
                                 {
                                     selectedSchools = schoolRepo.Get(selectedSchoolIDs);
                                 }
-                                
-                                Logging.Info("Loading students");
+
+                                Log.Info("Loading students");
                                 foreach (School school in selectedSchools)
                                 {
                                     List<Student> schoolStudents = studentRepo.LoadForSchool(connection, school, parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
 
                                     if (onlyDailyAttendance && !onlyPeriodAttendance)
                                     {
-                                        Logging.Info("Only using daily attendance students");
+                                        Log.Info("Only using daily attendance students");
                                         schoolStudents = schoolStudents.Where(s => s.IsTrackDaily == true).ToList();
                                     }
 
                                     if (onlyPeriodAttendance && !onlyDailyAttendance)
                                     {
-                                        Logging.Info("Only using period attendance students");
+                                        Log.Info("Only using period attendance students");
                                         schoolStudents = schoolStudents.Where(s => s.IsTrackDaily == false).ToList();
                                     }
 
-                                    Logging.Info("Loaded " + schoolStudents.Count + " students for school " + school.Name);
+                                    Log.Info("Loaded " + schoolStudents.Count + " students for school " + school.Name);
 
                                     int schoolAbsenceCount = 0;
 
@@ -244,31 +252,31 @@ namespace SCAbsenceFile
                                         }
                                         schoolAbsenceCount += studentAbsences.Count;
                                     }
-                                    Logging.Info(" Loaded " + schoolAbsenceCount + " absences for school " + school.Name);
+                                    Log.Info(" Loaded " + schoolAbsenceCount + " absences for school " + school.Name);
                                 }
                             }
 
-                            Logging.Info("Creating CSV data");
+                            Log.Info("Creating CSV data");
 
                             MemoryStream csvContents = AbsenceCSV.GenerateCSV(studentsWithAbsences, softBlocks);
-                            Logging.Info("Saving CSV file (" + fileName + ")");
+                            Log.Info("Saving CSV file (" + fileName + ")");
                             if (FileHelpers.FileExists(fileName))
                             {
                                 FileHelpers.DeleteFile(fileName);
                             }
                             FileHelpers.SaveFile(csvContents, fileName);
-                            Logging.Info("Done!");
+                            Log.Info("Done!");
                         }
                         catch (Exception ex)
                         {
-                            Logging.Error(ex.Message);
+                            Log.Error(ex.Message);
                         }
                     }
                     else
                     {
-                        Logging.Error("Configuration file not found");
-                        Logging.Info("Creating new config file (" + Config.configFileName + ")...");
-                        Logging.Info("Please edit the file and try again");
+                        Log.Error("Configuration file not found");
+                        Log.Info("Creating new config file (" + Config.configFileName + ")...");
+                        Log.Info("Please edit the file and try again");
                         Config.CreateNewConfigFile();
                     }
                 }

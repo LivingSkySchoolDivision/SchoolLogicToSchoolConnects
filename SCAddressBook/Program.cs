@@ -12,9 +12,36 @@ namespace SCAddressBook
 {
     class Program
     {
+        static Logging Log = new Logging();
+
         static void SendSyntax()
         {
-            Console.WriteLine("Syntax goes here");
+            Console.WriteLine("SYNTAX:");
+            Console.WriteLine("");
+            Console.WriteLine(" REQUIRED:");
+            Console.WriteLine("");
+            Console.WriteLine(" /schoolid:000000");
+            Console.WriteLine(" Specify the government ID of the school, as found in the \"code\" field in");
+            Console.WriteLine(" SchoolLogic.");
+            Console.WriteLine(" Required, if not using //allschools.");
+            Console.WriteLine("");
+            Console.WriteLine(" /filename:filename.csv");
+            Console.WriteLine(" Specify the filename to use for the output");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine(" /date:[today|yesterday|now]");
+            Console.WriteLine(" Which day would you like absences from.");
+            Console.WriteLine("");
+            Console.WriteLine(" OPTIONAL:");
+            Console.WriteLine("");
+            Console.WriteLine(" /grades:pk,k,1,2,3,4,5,6,7,8,9,10,11,12");
+            Console.WriteLine("");
+            Console.WriteLine(" /logfilename:filename.log");
+            Console.WriteLine(" Specify the filename to use for the log");
+            Console.WriteLine("");
+            Console.WriteLine(" /allschools");
+            Console.WriteLine(" Select all schools (ignoring //schoolid)");
+
         }
 
         static void Main(string[] args)
@@ -48,6 +75,10 @@ namespace SCAddressBook
                     {
                         fileName = argument.Substring(10, argument.Length - 10);
                     }
+                    else if (argument.ToLower().StartsWith("/logfilename:"))
+                    {
+                        Log.LogFileName = argument.Substring(13, argument.Length - 13);
+                    }
                     else if (argument.ToLower().StartsWith("/date:"))
                     {
                         date = argument.Substring(6, argument.Length - 6);
@@ -68,14 +99,14 @@ namespace SCAddressBook
                     {
                         string gradesRaw = argument.Substring(8, argument.Length - 8).Trim('\"').Trim();
                         grades = new List<string>();
-                        Logging.ToLog("Limiting student selection to specific grades");
+                        Log.ToLog("Limiting student selection to specific grades");
                         foreach (string ss in gradesRaw.Split(','))
                         {
                             if (string.IsNullOrEmpty(ss))
                             {
                                 grades.Add(ss.ToLower());
 
-                                Logging.ToLog(" Adding grade \"" + ss + "\"");
+                                Log.ToLog(" Adding grade \"" + ss + "\"");
                             }
                         }
                     }
@@ -93,9 +124,9 @@ namespace SCAddressBook
 
                         try
                         {
-                            Logging.ToLog("----------------------------------------------------------------");
-                            Logging.Info("Creating address book file for date " + parsedDate.ToLongDateString());
-                            Logging.Info(" File creation started: " + DateTime.Now);
+                            Log.ToLog("----------------------------------------------------------------");
+                            Log.Info("Creating address book file for date " + parsedDate.ToLongDateString());
+                            Log.Info(" File creation started: " + DateTime.Now);
 
                             List<Student> reportStudents = new List<Student>();
                             List<School> selectedSchools = new List<School>();
@@ -115,17 +146,17 @@ namespace SCAddressBook
                                     selectedSchools = schoolRepo.Get(selectedSchoolNumbers);
                                 }
 
-                                Logging.Info("Loading students");
+                                Log.Info("Loading students");
                                 foreach (School school in selectedSchools)
                                 {
                                     List<Student> schoolStudents = studentRepo.LoadForSchool(connection, school,
                                         parsedDate).Where(s => grades.Contains(s.Grade.ToLower())).ToList();
 
-                                    Logging.Info("Loaded " + schoolStudents.Count + " students for school " +
+                                    Log.Info("Loaded " + schoolStudents.Count + " students for school " +
                                                  school.Name);
 
                                     // Load student contacts
-                                    Logging.Info("Loading student contacts");
+                                    Log.Info("Loading student contacts");
                                     foreach (Student student in schoolStudents)
                                     {
                                         student.Contacts =contactRepo.LoadForStudent(connection, student.DatabaseID);
@@ -134,28 +165,28 @@ namespace SCAddressBook
                                 }
                             }
 
-                            
-                            Logging.Info("Creating CSV data");
+
+                            Log.Info("Creating CSV data");
                             MemoryStream csvContents = AddressBookCSV.GenerateCSV(reportStudents);
-                            Logging.Info("Saving CSV file (" + fileName + ")");
+                            Log.Info("Saving CSV file (" + fileName + ")");
                             if (FileHelpers.FileExists(fileName))
                             {
                                 FileHelpers.DeleteFile(fileName);
                             }
                             FileHelpers.SaveFile(csvContents, fileName);
-                            Logging.Info("Done!");
+                            Log.Info("Done!");
                             
                         }
                         catch (Exception ex)
                         {
-                            Logging.Error(ex.Message);
+                            Log.Error(ex.Message);
                         }
                     }
                     else
                     {
-                        Logging.Error("Configuration file not found");
-                        Logging.Info("Creating new config file (" + Config.configFileName + ")...");
-                        Logging.Info("Please edit the file and try again");
+                        Log.Error("Configuration file not found");
+                        Log.Info("Creating new config file (" + Config.configFileName + ")...");
+                        Log.Info("Please edit the file and try again");
                         Config.CreateNewConfigFile();
                     }
                 }
